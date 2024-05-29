@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option go_package = "github.com/krelinga/transcode-service/pb";
+
+message BeginOneFileRequest {
+    string in_path = 1;
+    string out_path = 2;
+    string key = 3;
+}
+
+message BeginOneFileReply {
+    string key = 1;
+}
+
+message CheckOneFileRequest {
+    string key = 1;
+}
+
+enum OneFileStatus {
+    UNKNOWN = 0;
+    NOT_STARTED = 1;
+    IN_PROGRESS = 2;
+    COMPLETE = 3;
+    FAILED = 4;
+}
+
+message CheckOneFileReply {
+    string in_path = 1;
+    string out_path = 2;
+    string key = 3;
+    OneFileStatus status = 4;
+}
+
+service Transcode {
+    rpc BeginOneFile(BeginOneFileRequest) returns (BeginOneFileReply) {}
+    rpc CheckOneFile(CheckOneFileRequest) returns (CheckOneFileReply) {}
+}
