@@ -2,18 +2,22 @@ syntax = "proto3";
 
 option go_package = "github.com/krelinga/transcode-service/pb";
 
-message BeginOneFileRequest {
+// Uniquely describe a single-file transcode.
+message OneFileKey {
     string in_path = 1;
     string out_path = 2;
-    string key = 3;
+}
+
+message BeginOneFileRequest {
+    OneFileKey key = 1;
 }
 
 message BeginOneFileReply {
-    string key = 1;
+    OneFileKey key = 1;
 }
 
 message CheckOneFileRequest {
-    string key = 1;
+    OneFileKey key = 1;
 }
 
 enum OneFileStatus {
@@ -25,10 +29,8 @@ enum OneFileStatus {
 }
 
 message CheckOneFileReply {
-    string in_path = 1;
-    string out_path = 2;
-    string key = 3;
-    OneFileStatus status = 4;
+    OneFileKey key = 1;
+    OneFileStatus status = 2;
 }
 
 service Transcode {
