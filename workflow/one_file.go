@@ -8,15 +8,15 @@ import (
     "go.temporal.io/sdk/workflow"
 )
 
-type OneFileRequest struct {
+type TranscodeOneFileRequest struct {
     InPath string
     OutPath string
 }
 
-type OneFileReply struct {
+type TranscodeOneFileReply struct {
 }
 
-func OneFile(ctx workflow.Context, req *OneFileRequest) (*OneFileReply, error) {
+func TranscodeOneFile(ctx workflow.Context, req *TranscodeOneFileRequest) (*TranscodeOneFileReply, error) {
     // Create output directory if necessary.
     outDir := filepath.Dir(req.OutPath)
     err := workflow.ExecuteLocalActivity(ctx, activity.Mkdir, &activity.MkdirRequest{
@@ -96,7 +96,7 @@ func OneFile(ctx workflow.Context, req *OneFileRequest) (*OneFileReply, error) {
         }
     }
     if nfoPathPair == nil {
-        return &OneFileReply{}, nil
+        return &TranscodeOneFileReply{}, nil
     }
 
     // Update .nfo file, if it exists.
@@ -108,5 +108,5 @@ func OneFile(ctx workflow.Context, req *OneFileRequest) (*OneFileReply, error) {
         return nil, err
     }
 
-    return &OneFileReply{}, nil
+    return &TranscodeOneFileReply{}, nil
 }
