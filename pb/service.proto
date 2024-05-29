@@ -6,10 +6,12 @@ option go_package = "github.com/krelinga/transcode-service/pb";
 message OneFileKey {
     string in_path = 1;
     string out_path = 2;
+    string instance = 3;
 }
 
 message BeginOneFileRequest {
-    OneFileKey key = 1;
+    string in_path = 1;
+    string out_path = 2;
 }
 
 message BeginOneFileReply {
