@@ -10,8 +10,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o api-server ./api
 
 FROM gcr.io/distroless/static-debian12 AS build-release-stage
 WORKDIR /
-COPY --from=build_stage /app/api /api
+COPY --from=build_stage /app/api-server /api-server
 
 EXPOSE 25003
 
-ENTRYPOINT ["/api"]
+ENTRYPOINT ["/api-server"]

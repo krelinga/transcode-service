@@ -1,0 +1,16 @@
+---
+services:
+  api:
+    image: "${API_IMAGE}"
+    ports:
+      - "25003:25003"
+    networks:
+      - "shared"
+
+  worker:
+    image: "${WORKER_IMAGE}"
+    networks:
+      - "shared"
+
+networks:
+  shared: {}
