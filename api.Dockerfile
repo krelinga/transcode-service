@@ -14,4 +14,7 @@ COPY --from=build_stage /app/api-server /api-server
 
 EXPOSE 25003
 
+ENV temporal_host=localhost
+ENV temporal_port=7233
+
 ENTRYPOINT ["/api-server"]

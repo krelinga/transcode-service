@@ -14,4 +14,7 @@ FROM gcr.io/distroless/static-debian12 AS build-release-stage
 WORKDIR /
 COPY --from=build_stage /app/worker-server /worker-server
 
+ENV temporal_host=localhost
+ENV temporal_port=7233
+
 ENTRYPOINT ["/worker-server"]
