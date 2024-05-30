@@ -5,6 +5,7 @@ import (
     "fmt"
     "os"
     "os/exec"
+    "path/filepath"
     "testing"
 
     "github.com/google/uuid"
@@ -60,9 +61,9 @@ type testProject struct {
     dir string
 }
 
-func newTestProject(dir string) *testProject {
+func newTestProject(dir, namePrefix string) *testProject {
     return &testProject{
-        name: fmt.Sprintf("tcservice-%s", uuid.NewString()),
+        name: fmt.Sprintf("%s-%s", namePrefix, uuid.NewString()),
         dir: dir,
     }
 }
@@ -136,7 +137,7 @@ func TestDocker(t *testing.T) {
     workerTc := newTestContainer("worker", "worker.Dockerfile")
     workerTc.BuildImage(t)
     defer workerTc.DeleteImage(t)
-    tp := newTestProject(getWorkingDir(t))
+    tp := newTestProject(getWorkingDir(t), "tcservice")
     apiEnv := fmt.Sprintf("API_IMAGE=%s", apiTc.ContainerId)
     workerEnv := fmt.Sprintf("WORKER_IMAGE=%s", workerTc.ContainerId)
     tp.Up(t, apiEnv, workerEnv)
@@ -144,4 +145,7 @@ func TestDocker(t *testing.T) {
     tmpDir := makeTempDir(t)
     defer deleteTempDir(t, tmpDir)
     cloneTemporalGitRepo(t, tmpDir)
+    temporal := newTestProject(filepath.Join(tmpDir, "docker-compose"), "temporal")
+    temporal.Up(t)
+    defer temporal.Down(t)
 }
