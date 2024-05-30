@@ -55,16 +55,22 @@ func (tc *testContainer) DeleteImage(t *testing.T) {
     }
 }
 
-type testProject string
-
-func newTestProject() testProject {
-    return testProject(fmt.Sprintf("tcservice-%s", uuid.NewString()))
+type testProject struct {
+    name string
+    dir string
 }
 
-func (tp testProject) Up(t *testing.T, api, worker *testContainer) {
+func newTestProject(dir string) *testProject {
+    return &testProject{
+        name: fmt.Sprintf("tcservice-%s", uuid.NewString()),
+        dir: dir,
+    }
+}
+
+func (tp *testProject) Up(t *testing.T, api, worker *testContainer) {
     t.Helper()
     args := []string {
-        "compose", "-p", string(tp),
+        "compose", "-p", tp.name,
         "up", "-d",
     }
     cmd := exec.Command("docker", args...)
@@ -78,10 +84,10 @@ func (tp testProject) Up(t *testing.T, api, worker *testContainer) {
     }
 }
 
-func (tp testProject) Down(t *testing.T) {
+func (tp *testProject) Down(t *testing.T) {
     t.Helper()
     args := []string {
-        "compose", "-p", string(tp),
+        "compose", "-p", tp.name,
         "down",
     }
     cmd := exec.Command("docker", args...)
@@ -115,6 +121,14 @@ func cloneTemporalGitRepo(t *testing.T, dir string) {
     }
 }
 
+func getWorkingDir(t *testing.T) string {
+    dir, err := os.Getwd()
+    if err != nil {
+        t.Fatalf("Could not read working directory.  Error was %s", err)
+    }
+    return dir
+}
+
 func TestDocker(t *testing.T) {
     t.Parallel()
     apiTc := newTestContainer("api", "api.Dockerfile")
@@ -123,7 +137,7 @@ func TestDocker(t *testing.T) {
     workerTc := newTestContainer("worker", "worker.Dockerfile")
     workerTc.BuildImage(t)
     defer workerTc.DeleteImage(t)
-    tp := newTestProject()
+    tp := newTestProject(getWorkingDir(t))
     tp.Up(t, apiTc, workerTc)
     defer tp.Down(t)
     tmpDir := makeTempDir(t)
