@@ -106,6 +106,15 @@ func deleteTempDir(t *testing.T, dir string) {
     }
 }
 
+func cloneTemporalGitRepo(t *testing.T, dir string) {
+    cmd := exec.Command("git", "clone", "https://github.com/temporalio/docker-compose.git")
+    cmd.Dir = dir
+    cmdOutput := captureOutput(cmd)
+    if err := cmd.Run(); err != nil {
+        t.Fatalf("Could not clone temporal git repo.  Error was %s.  Output:\n%s", err, cmdOutput)
+    }
+}
+
 func TestDocker(t *testing.T) {
     t.Parallel()
     apiTc := newTestContainer("api", "api.Dockerfile")
@@ -119,4 +128,5 @@ func TestDocker(t *testing.T) {
     defer tp.Down(t)
     tmpDir := makeTempDir(t)
     defer deleteTempDir(t, tmpDir)
+    cloneTemporalGitRepo(t, tmpDir)
 }
