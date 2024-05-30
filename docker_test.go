@@ -74,6 +74,7 @@ func (tp *testProject) Up(t *testing.T, envEdits... string) {
         "up", "-d",
     }
     cmd := exec.Command("docker", args...)
+    cmd.Dir = tp.dir
     cmd.Env = append(os.Environ(), envEdits...)
     cmdOutput := captureOutput(cmd)
     if err := cmd.Run(); err != nil {
