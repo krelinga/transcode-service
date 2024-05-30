@@ -5,7 +5,6 @@ import (
     "fmt"
     "os"
     "os/exec"
-    "sync"
     "testing"
 
     "github.com/google/uuid"
@@ -93,27 +92,31 @@ func (tp testProject) Down(t *testing.T) {
     }
 }
 
+func makeTempDir(t *testing.T) string {
+    dir, err := os.MkdirTemp("", "")
+    if err != nil {
+        t.Fatalf("Could not make temp directory. Error was %s", err)
+    }
+    return dir
+}
+
+func deleteTempDir(t *testing.T, dir string) {
+    if err := os.RemoveAll(dir); err != nil {
+        t.Fatalf("Could not delete temp directory %s.  Error was %s", dir, err)
+    }
+}
+
 func TestDocker(t *testing.T) {
     t.Parallel()
     apiTc := newTestContainer("api", "api.Dockerfile")
     workerTc := newTestContainer("worker", "worker.Dockerfile")
-    func() {
-        // build containers in parallel
-        wg := &sync.WaitGroup{}
-        wg.Add(2)
-        go func() {
-            apiTc.BuildImage(t)
-            wg.Done()
-        }()
-        go func() {
-            workerTc.BuildImage(t)
-            wg.Done()
-        }()
-        wg.Wait()
-    }()
+    apiTc.BuildImage(t)
     defer apiTc.DeleteImage(t)
+    workerTc.BuildImage(t)
     defer workerTc.DeleteImage(t)
     tp := newTestProject()
     tp.Up(t, apiTc, workerTc)
     defer tp.Down(t)
+    tmpDir := makeTempDir(t)
+    defer deleteTempDir(t, tmpDir)
 }
