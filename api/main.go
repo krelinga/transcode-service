@@ -22,7 +22,7 @@ func mainOrError() error {
         return err
     }
     grpcServer := grpc.NewServer()
-    pb.RegisterTranscodeServer(grpcServer, &TranscodeServer{})
+    pb.RegisterTranscodeServer(grpcServer, NewTranscodeServer(temporalC))
     grpcServer.Serve(lis)  // Runs as long as the server is alive.
 
     return nil

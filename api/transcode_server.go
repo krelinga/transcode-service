@@ -9,10 +9,13 @@ import (
 
 type TranscodeServer struct {
     pb.UnimplementedTranscodeServer
-    temporalC *client.Client
+    temporalC client.Client
 }
 
-func NewTranscodeServer(temporalC *client.Client) {
+func NewTranscodeServer(temporalC client.Client) *TranscodeServer {
+    return &TranscodeServer{
+        temporalC: temporalC,
+    }
 }
 
 func (_ *TranscodeServer) BeginOneFile(ctx context.Context, req *pb.BeginOneFileRequest) (*pb.BeginOneFileReply, error) {
