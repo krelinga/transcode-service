@@ -67,16 +67,14 @@ func newTestProject(dir string) *testProject {
     }
 }
 
-func (tp *testProject) Up(t *testing.T, api, worker *testContainer) {
+func (tp *testProject) Up(t *testing.T, envEdits... string) {
     t.Helper()
     args := []string {
         "compose", "-p", tp.name,
         "up", "-d",
     }
     cmd := exec.Command("docker", args...)
-    apiEnv := fmt.Sprintf("API_IMAGE=%s", api.ContainerId)
-    workerEnv := fmt.Sprintf("WORKER_IMAGE=%s", worker.ContainerId)
-    cmd.Env = append(os.Environ(), apiEnv, workerEnv)
+    cmd.Env = append(os.Environ(), envEdits...)
     cmdOutput := captureOutput(cmd)
     if err := cmd.Run(); err != nil {
         const template = "Could not up containers.  Error was %s.  Output:\n%s"
@@ -138,7 +136,9 @@ func TestDocker(t *testing.T) {
     workerTc.BuildImage(t)
     defer workerTc.DeleteImage(t)
     tp := newTestProject(getWorkingDir(t))
-    tp.Up(t, apiTc, workerTc)
+    apiEnv := fmt.Sprintf("API_IMAGE=%s", apiTc.ContainerId)
+    workerEnv := fmt.Sprintf("WORKER_IMAGE=%s", workerTc.ContainerId)
+    tp.Up(t, apiEnv, workerEnv)
     defer tp.Down(t)
     tmpDir := makeTempDir(t)
     defer deleteTempDir(t, tmpDir)
