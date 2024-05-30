@@ -1,14 +1,22 @@
 package main
 
 import (
+    "fmt"
     "log"
     "net"
 
-    "google.golang.org/grpc"
     "github.com/krelinga/transcode-service/pb"
+    "go.temporal.io/sdk/client"
+    "google.golang.org/grpc"
 )
 
 func mainOrError() error {
+    temporalC, err := client.Dial(client.Options{})
+    if err != nil {
+        return fmt.Errorf("Could not create temporal client: %w", err)
+    }
+    defer temporalC.Close()
+
     lis, err := net.Listen("tcp", ":25003")
     if err != nil {
         return err

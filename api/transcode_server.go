@@ -4,10 +4,15 @@ import (
     "context"
 
     "github.com/krelinga/transcode-service/pb"
+    "go.temporal.io/sdk/client"
 )
 
 type TranscodeServer struct {
     pb.UnimplementedTranscodeServer
+    temporalC *client.Client
+}
+
+func NewTranscodeServer(temporalC *client.Client) {
 }
 
 func (_ *TranscodeServer) BeginOneFile(ctx context.Context, req *pb.BeginOneFileRequest) (*pb.BeginOneFileReply, error) {
