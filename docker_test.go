@@ -109,9 +109,9 @@ func deleteTempDir(t *testing.T, dir string) {
 func TestDocker(t *testing.T) {
     t.Parallel()
     apiTc := newTestContainer("api", "api.Dockerfile")
-    workerTc := newTestContainer("worker", "worker.Dockerfile")
     apiTc.BuildImage(t)
     defer apiTc.DeleteImage(t)
+    workerTc := newTestContainer("worker", "worker.Dockerfile")
     workerTc.BuildImage(t)
     defer workerTc.DeleteImage(t)
     tp := newTestProject()
