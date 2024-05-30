@@ -2,6 +2,7 @@ package main
 
 import (
     "bytes"
+    "context"
     "fmt"
     "os"
     "os/exec"
@@ -9,6 +10,9 @@ import (
     "testing"
 
     "github.com/google/uuid"
+    "github.com/krelinga/transcode-service/pb"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials/insecure"
 )
 
 func captureOutput(cmd *exec.Cmd) *bytes.Buffer {
@@ -129,6 +133,18 @@ func getWorkingDir(t *testing.T) string {
     return dir
 }
 
+func createApiStub(t *testing.T) (pb.TranscodeClient, func()) {
+    const target = "docker-daemon:25003"
+    creds := grpc.WithTransportCredentials(insecure.NewCredentials())
+    conn, err := grpc.DialContext(context.Background(), target, creds)
+    if err != nil {
+        t.Fatalf("Could not dial API server: %e", err)
+    }
+    return pb.NewTranscodeClient(conn), func() {
+        conn.Close()
+    }
+}
+
 func TestDocker(t *testing.T) {
     t.Parallel()
     apiTc := newTestContainer("api", "api.Dockerfile")
@@ -148,4 +164,6 @@ func TestDocker(t *testing.T) {
     temporal := newTestProject(filepath.Join(tmpDir, "docker-compose"), "temporal")
     temporal.Up(t)
     defer temporal.Down(t)
+    _, stubCleanup := createApiStub(t)
+    defer stubCleanup()
 }
