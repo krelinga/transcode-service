@@ -158,9 +158,12 @@ func TestDocker(t *testing.T) {
     workerTc.BuildImage(t)
     defer workerTc.DeleteImage(t)
     tp := newTestProject(getWorkingDir(t), "tcservice")
+    tp.ComposeFiles = []string{"compose.yaml", "compose-for-test.yaml"}
     apiEnv := fmt.Sprintf("API_IMAGE=%s", apiTc.ContainerId)
     workerEnv := fmt.Sprintf("WORKER_IMAGE=%s", workerTc.ContainerId)
-    tp.Up(t, apiEnv, workerEnv)
+    workerUidEnv := fmt.Sprintf("WORKER_UID=%d", os.Getuid())
+    workerGidEnv := fmt.Sprintf("WORKER_GID=%d", os.Getgid())
+    tp.Up(t, apiEnv, workerEnv, workerUidEnv, workerGidEnv)
     defer tp.Down(t)
     tmpDir := makeTempDir(t)
     defer deleteTempDir(t, tmpDir)

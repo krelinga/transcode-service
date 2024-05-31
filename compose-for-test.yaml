@@ -1,0 +1,8 @@
+---
+services:
+  worker:
+    volumes:
+      - type: bind
+        source: "/save/transcode-service/testdata"
+        target: "/testdata"
+    user: "${WORKER_UID}:${WORKER_GID}"
