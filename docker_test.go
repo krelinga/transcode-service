@@ -63,6 +63,9 @@ func (tc *testContainer) DeleteImage(t *testing.T) {
 type testProject struct {
     name string
     dir string
+
+    // If set, these will be passed with `-f option to docker compose command.
+    ComposeFiles []string
 }
 
 func newTestProject(dir, namePrefix string) *testProject {
@@ -74,10 +77,11 @@ func newTestProject(dir, namePrefix string) *testProject {
 
 func (tp *testProject) Up(t *testing.T, envEdits... string) {
     t.Helper()
-    args := []string {
-        "compose", "-p", tp.name,
-        "up", "-d",
+    args := []string {"compose", "-p", tp.name}
+    for _, f := range tp.ComposeFiles {
+        args = append(args, "-f", f)
     }
+    args = append(args, "up", "-d")
     cmd := exec.Command("docker", args...)
     cmd.Dir = tp.dir
     cmd.Env = append(os.Environ(), envEdits...)
