@@ -151,6 +151,12 @@ func createApiStub(t *testing.T) (pb.TranscodeClient, func()) {
 
 func TestDocker(t *testing.T) {
     t.Parallel()
+    tmpDir := makeTempDir(t)
+    defer deleteTempDir(t, tmpDir)
+    cloneTemporalGitRepo(t, tmpDir)
+    temporal := newTestProject(filepath.Join(tmpDir, "docker-compose"), "temporal")
+    temporal.Up(t)
+    defer temporal.Down(t)
     apiTc := newTestContainer("api", "api.Dockerfile")
     apiTc.BuildImage(t)
     defer apiTc.DeleteImage(t)
@@ -163,14 +169,18 @@ func TestDocker(t *testing.T) {
     workerEnv := fmt.Sprintf("WORKER_IMAGE=%s", workerTc.ContainerId)
     workerUidEnv := fmt.Sprintf("WORKER_UID=%d", os.Getuid())
     workerGidEnv := fmt.Sprintf("WORKER_GID=%d", os.Getgid())
-    tp.Up(t, apiEnv, workerEnv, workerUidEnv, workerGidEnv)
+    temporalHostEnv := "temporal_host=docker-daemon"
+    tp.Up(t, apiEnv, workerEnv, workerUidEnv, workerGidEnv, temporalHostEnv)
     defer tp.Down(t)
-    tmpDir := makeTempDir(t)
-    defer deleteTempDir(t, tmpDir)
-    cloneTemporalGitRepo(t, tmpDir)
-    temporal := newTestProject(filepath.Join(tmpDir, "docker-compose"), "temporal")
-    temporal.Up(t)
-    defer temporal.Down(t)
-    _, stubCleanup := createApiStub(t)
+    stub, stubCleanup := createApiStub(t)
     defer stubCleanup()
+
+    req := &pb.BeginOneFileRequest{
+        InPath: "/testdata/sample_640x360.mkv",
+        OutPath: "/testdata/out.mkv",
+    }
+    _, err := stub.BeginOneFile(context.Background(), req)
+    if err != nil {
+        t.Fatalf("Could not call BeginOneFile(): %s", err)
+    }
 }
